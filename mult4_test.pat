@@ -1,4 +1,4 @@
--- exhaustive test, 15ns settle time between force and check
+-- exhaustive test, 15ns settle time, from mult4_table.txt
 in vdd;
 in vss;
 in a_3;

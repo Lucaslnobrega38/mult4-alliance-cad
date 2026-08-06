@@ -18,7 +18,7 @@ of the four high bits.
 ## Result
 
 256 / 256 test vectors match — every product and overflow bit verified
-against the expected value.
+against `mult4_table.txt`, a plain reference truth table.
 
 ## Physical layout
 
@@ -85,14 +85,14 @@ no headless/batch mode, so it can't be scripted into `run.sh`).
 | File | Purpose |
 |---|---|
 | `mult4.c` | genlib structural description of the multiplier |
-| `mult4_test.pat` | exhaustive test bench, 256 cases × force/check pair, 15ns settle |
+| `mult4_table.txt` | reference truth table (A, B, P, OVF), one line per case — the single source of truth |
+| `mult4_test.pat` | exhaustive test bench, generated from the table, 15ns settle |
 | `tb_delay.cir` | SPICE testbench around the extracted netlist, for the delay cross-check |
 | `build_mult4.sh` | `genlib` + netlist fix-up |
 | `place_route.sh` | `ocp` (placement) + `nero` (routing) → `mult4.ap` |
-| `find_delay.sh` / `gen_pat.py` | propagation-delay sweep (see above) |
-| `run.sh` / `start.sh` / `stop.sh` | Docker lifecycle + one-shot build & simulate |
+| `find_delay.sh` / `gen_pat.py` | propagation-delay sweep (see above), reads `mult4_table.txt` |
+| `run.sh` / `start.sh` / `stop.sh` | Docker lifecycle + one-shot build & simulate, checks against `mult4_table.txt` |
 | `Dockerfile` | Ubuntu 18.04 + Alliance CAD 5.1.1 (i386 build, see below) |
-| `gen_test_vectors.py` | reference table generator for the test bench |
 
 ## Toolchain notes
 

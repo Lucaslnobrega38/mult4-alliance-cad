@@ -37,6 +37,13 @@ $DOCKER run --rm -v "$PROJECT_DIR":/work -w /work "$IMAGE_NAME" bash -c '
     echo "==> A x B = P (decodificado de mult4_res.pat)"
     echo ""
 
+    # carrega a tabela de referencia (mult4_table.txt: A B P OVF)
+    declare -A expected
+    while read -r ta tb tp tovf; do
+        [ "$ta" = "A" ] && continue
+        expected["$ta,$tb"]="$tp,$tovf"
+    done < mult4_table.txt
+
     ok_count=0
     fail_count=0
 
@@ -51,15 +58,13 @@ $DOCKER run --rm -v "$PROJECT_DIR":/work -w /work "$IMAGE_NAME" bash -c '
             b=$((2#${ins:6:1}${ins:7:1}${ins:8:1}${ins:9:1}))
             p=$((2#${outs:0:8}))
             ovf=${outs:8:1}
-            expected=$((a * b))
-            expected_ovf=0
-            [ "$expected" -gt 15 ] && expected_ovf=1
+            IFS=, read -r expected_p expected_ovf <<< "${expected[$a,$b]}"
 
-            if [ "$p" -eq "$expected" ] && [ "$ovf" -eq "$expected_ovf" ]; then
+            if [ "$p" -eq "$expected_p" ] && [ "$ovf" -eq "$expected_ovf" ]; then
                 status="OK"
                 ok_count=$((ok_count + 1))
             else
-                status="FALHOU (esperado $expected, ovf=$expected_ovf)"
+                status="FALHOU (tabela: $expected_p, ovf=$expected_ovf)"
                 fail_count=$((fail_count + 1))
             fi
 
