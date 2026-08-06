@@ -1,0 +1,45 @@
+mult4 propagation delay testbench (SPICE-level cross-check)
+* Netlist extracted for real from the routed layout via:
+*   cougar -v -t -ac mult4 mult4_e
+* (578 transistors, real parasitic capacitances from the actual place&route).
+*
+* Transistor models below are GENERIC illustrative Level=1 parameters for a
+* 1um process -- NOT calibrated to any real fab, and NOT part of the
+* Alliance "cmos" technology (which only ships design-rule/geometry data,
+* no electrical device models). Used only to get an order-of-magnitude
+* SPICE-level cross-check against the asimut logic-delay figure (13ns).
+*
+* Two internal nodes (80, 17 -- inputs of ha_rf_0_b_and/xor) come out of
+* cougar's extraction with no DC path to ground, which trips SpiceOpus's
+* floating-node check. Fix: two 1e12 ohm leakage resistors to vss, added
+* to mult4_e.spi right before ".ends mult4_e":
+*   Rfix1 80 265 1T
+*   Rfix2 17 265 1T
+
+.include mult4_e.spi
+
+.model tn nmos level=1 vto=0.8 kp=50e-6 lambda=0.02 gamma=0.4 phi=0.6
+.model tp pmos level=1 vto=-0.8 kp=20e-6 lambda=0.02 gamma=0.4 phi=0.6
+
+vdd n_vdd 0 dc 5
+vss n_gnd 0 dc 0
+
+* 0x0 -> 15x15 (all inputs 0 -> 5V) transition at t=20ns, 0.2ns edge
+va0 n_a0 0 pwl(0 0 20n 0 20.2n 5)
+va1 n_a1 0 pwl(0 0 20n 0 20.2n 5)
+va2 n_a2 0 pwl(0 0 20n 0 20.2n 5)
+va3 n_a3 0 pwl(0 0 20n 0 20.2n 5)
+vb0 n_b0 0 pwl(0 0 20n 0 20.2n 5)
+vb1 n_b1 0 pwl(0 0 20n 0 20.2n 5)
+vb2 n_b2 0 pwl(0 0 20n 0 20.2n 5)
+vb3 n_b3 0 pwl(0 0 20n 0 20.2n 5)
+
+x1 n_a0 n_a1 n_a2 n_a3 n_b0 n_b1 n_b2 n_b3 n_ovf n_p0 n_p1 n_p2 n_p3 n_p4 n_p5 n_p6 n_p7 n_vdd n_gnd mult4_e
+
+.control
+set filetype=ascii
+tran 10p 60n
+write spice_delay.txt v(n_ovf) v(n_p7) v(n_p6) v(n_p5) v(n_a0)
+.endc
+
+.end

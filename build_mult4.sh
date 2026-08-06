@@ -8,7 +8,15 @@
 
 set -e
 
-genlib mult4
+echo "  -> genlib mult4.c ..."
+if genlib mult4 > genlib.log 2>&1; then
+    echo "  [OK] netlist gerado (mult4.vst)"
+else
+    echo "  [FALHOU] genlib nao conseguiu compilar mult4.c"
+    echo ""
+    cat genlib.log
+    exit 1
+fi
 
 sed -i \
     -e 's/\ba_0_\b/a_0/g' -e 's/\ba_1_\b/a_1/g' -e 's/\ba_2_\b/a_2/g' -e 's/\ba_3_\b/a_3/g' \
@@ -17,4 +25,5 @@ sed -i \
     -e 's/\bp_4_\b/p_4/g' -e 's/\bp_5_\b/p_5/g' -e 's/\bp_6_\b/p_6/g' -e 's/\bp_7_\b/p_7/g' \
     mult4.vst
 
-echo "mult4.vst gerado e corrigido."
+echo "  [OK] identificadores de barramento corrigidos (a_0_ -> a_0, etc.)"
+rm -f genlib.log
